@@ -1,56 +1,82 @@
-# Welcome to your Expo app 👋
+# FINE — 벌금형 소셜 습관 챌린지 앱
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+친한 소그룹(3~8명)이 벌금을 걸고 습관을 사진으로 인증하는 앱.
+앱은 돈을 만지지 않고 **규칙 설정 · 인증 검증 · 주간 벌금 장부**만 제공한다(장부 모델).
 
-## Get started
+- 단일 기술 명세: `../FINE-TECH-SPEC.md` (v1.2) — 이 리포는 §14 구현 순서(T0~T13)를 따른다.
+- 스택: Expo(React Native, expo-router, TypeScript strict) + Supabase(Postgres·Auth·Storage·Realtime·Edge Functions·pg_cron)
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## 시작하기 (로컬 개발)
 
 ```bash
-npm run reset-project
+npm install
+# Docker Desktop 실행 후:
+npx supabase start          # 로컬 Supabase (마이그레이션 자동 적용)
+npm run seed                # 테스트 유저 4명 + 그룹 + active 시즌
+npm start                   # Expo dev server
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- 테스트 계정: `t1@fine.dev` ~ `t4@fine.dev` / 비번 `test1234` (이메일 OTP 코드는 Mailpit http://127.0.0.1:54324 에서 확인)
+- **실기기 테스트 시** `.env`의 `EXPO_PUBLIC_SUPABASE_URL`을 `http://<PC LAN IP>:54321`로 변경.
+- 카카오 로그인·푸시·카메라는 **dev build**(`expo-dev-client`) 필요. Expo Go에서는 이메일 OTP로 개발.
 
-### Other setup steps
+## 주요 스크립트
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+| 명령 | 설명 |
+|---|---|
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm run db:reset` | 마이그레이션 재적용 (0001~0006) |
+| `npm run seed` | 개발 시드 (유저·그룹·시즌) |
+| `npm run gen-types` | DB → `src/types/db.ts` 타입 재생성 (말미 수동 별칭 블록 유지할 것) |
+| `node --env-file=.env scripts/verify-rls.ts` | AC-2·AC-3 검증 (RLS 격리, 하루 1회 제한) |
 
-## Learn more
+서버 로직 테스트(AC-4·5·6, 정산 수식·멱등성·이의제기 재계산):
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+docker cp supabase/tests/settlement_test.sql supabase_db_fine:/tmp/t.sql
+docker exec supabase_db_fine psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/t.sql
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Edge Functions 로컬 실행·호출:
 
-## Join the community
+```bash
+npx supabase functions serve
+# 다른 터미널에서 (SERVICE_ROLE_KEY는 supabase start 출력값):
+curl -X POST http://127.0.0.1:54321/functions/v1/settle-week -H "Authorization: Bearer <SERVICE_ROLE_KEY>"
+```
 
-Join our community of developers creating universal apps.
+## 검증된 수용 기준 (로컬 자동 테스트)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- AC-2 같은 날 2회 인증 서버 거부(23505) ✅
+- AC-3 비멤버 RLS 격리(groups/seasons/checkins/ledger 0행, 인증 삽입 거부) ✅
+- AC-4 `settle_due_weeks` 2회 실행 멱등 ✅
+- AC-5 정산 수식 3케이스 (a)10,000 (b)0 (c)재계산 5,000 ✅
+- AC-6 과반 무효 → rejected + 기정산 주 재계산 ✅
+- AC-11 `build_daily_kpis` 멱등 + DQ 4종 통과 ✅
+- 시즌 4주 전량 정산 후 `closed` 전이 ✅
+
+실기기에서 확인 필요: 세션 유지·딥링크 콜드스타트(AC-9), 푸시 수신(AC-7), 카메라 인증 E2E(AC-1), 기기 시간 조작 불변(AC-10).
+
+## 스펙과 달라진 점 / 남은 작업 (TODO(spec))
+
+1. **`0006_grants.sql` 추가** — 최신 Supabase는 새 테이블에 API 롤(anon/authenticated/service_role) 기본 DML 권한을 주지 않아 명시 GRANT가 필요했다. 행 접근은 계속 RLS가 통제.
+2. **벌금액 입력 UI** — §7.3의 "슬라이더"는 §2 허용 라이브러리에 슬라이더가 없어 프리셋 칩(3/5/10k/0/50k)으로 구현.
+3. **T12 결제** — DB(0004)·rc-webhook·paywall 화면·플래그 격리는 완료. `react-native-purchases` 실제 연동(Offerings·구매·redeem)은 RevenueCat 키 발급 후 진행.
+4. **카카오 로그인** — 플러그인·분기 준비 완료, `KAKAO_NATIVE_APP_KEY` 설정 + dev build에서 활성화.
+5. **배포 시** `0003_cron.sql`의 `<PROJECT_REF>`, `<SERVICE_ROLE_KEY>` 치환 필요. EAS projectId 설정 후 푸시 토큰 발급 가능.
+6. `src/types/db.ts`는 자동 생성 파일이라 250줄 제한(§0-4) 예외.
+
+## 구조
+
+```
+app/                  # expo-router 화면 (§3, §7)
+src/api/              # react-query 훅 — 화면은 여기만 호출
+src/components/       # Button, Card, PhotoFeedItem, LedgerRow, ShareCard, ...
+src/lib/              # supabase, analytics(이중 기록), notifications, errors, dates
+src/i18n/ko.ts        # 사용자 노출 문자열 전부 (§17-10)
+supabase/migrations/  # 0001 스키마·RLS·RPC → 0006 grants
+supabase/functions/   # settle-week, remind-daily, resolve-disputes, rc-webhook
+supabase/tests/       # 서버 로직 SQL 테스트
+scripts/              # seed-users, verify-rls, gen-types
+```

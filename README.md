@@ -3,9 +3,17 @@
 친한 소그룹(3~8명)이 벌금을 걸고 습관을 사진으로 인증하는 앱.
 앱은 돈을 만지지 않고 **규칙 설정 · 인증 검증 · 주간 벌금 장부**만 제공한다(장부 모델).
 
-- 단일 기술 명세: `../FINE-TECH-SPEC.md` (v1.2) — 이 리포는 §14 구현 순서(T0~T13)를 따른다.
+- 단일 기술 명세: `FINE-TECH-SPEC` v1.2 기준 — 이 리포는 §14 구현 순서(T0~T13)를 따른다.
 - 스택: Expo(React Native, expo-router, TypeScript strict) + Supabase(Postgres·Auth·Storage·Realtime·Edge Functions·pg_cron)
 
+
+## 스크린샷
+
+> 로컬 Supabase + 시드(가상 계정·그룹)로 웹 빌드를 띄워 캡처한 화면입니다.
+
+| 로그인 | 내 그룹 | 그룹 만들기 |
+|---|---|---|
+| ![로그인](assets-readme/login.png) | ![내 그룹](assets-readme/home.png) | ![그룹 만들기](assets-readme/create-group.png) |
 ## 시작하기 (로컬 개발)
 
 ```bash

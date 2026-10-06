@@ -1,6 +1,6 @@
 # FINE 프로젝트 진행현황
 
-> 작성일: 2026-08-04 · 작성: Claude Code
+> 작성일: 2026-08-04
 > 근거 문서: `FINE-TECH-SPEC.md` v1.2 (기술 명세), `penalty-challenge-report-final.docx` v2.1 (사업 보고서)
 
 ## 1. 프로젝트 한 줄 요약

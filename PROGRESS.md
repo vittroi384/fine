@@ -8,7 +8,7 @@
 **FINE** — 친한 소그룹(3~8명)이 벌금을 걸고 습관을 사진으로 인증하는 소셜 챌린지 앱.
 앱은 돈을 만지지 않고 규칙 설정·인증 검증·주간 벌금 장부만 제공한다(장부 모델).
 
-- 위치: `C:\Claude\fine`
+- 위치: `C:\dev\fine`
 - 스택: Expo(React Native, TypeScript) + Supabase(DB·인증·저장소·실시간·서버함수)
 - 현재 상태: **MVP 구현 완료, 실제 폰에서 핵심 기능 동작 확인됨**
 
@@ -86,7 +86,7 @@ Expo Go로 안드로이드 실기기에서 확인:
 
 | 항목 | 값 |
 |---|---|
-| 앱 실행 | `cd C:\Claude\fine` → `npm start` |
+| 앱 실행 | `cd C:\dev\fine` → `npm start` |
 | 로컬 DB | `npx supabase start` (Docker 필요) |
 | 테스트 계정 | t1~t4@fine.dev / test1234 |
 | 로컬 메일함(OTP 확인) | http://localhost:54324 |

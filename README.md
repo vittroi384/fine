@@ -91,7 +91,7 @@ curl -X POST http://127.0.0.1:54321/functions/v1/settle-week -H "Authorization: 
 8. **track_event 무제한** (`0005_analytics.sql:20`) — 로그인 사용자가 임의 이름·props의 이벤트를 횟수 제한 없이 넣을 수 있다 / 수집 진입점에 이름 목록 검사·빈도 제한이 없다 / event_name을 §12 목록으로 제한하고 사용자별 상한 추가.
 9. **SQL 테스트 1파일·CI 없음** (`supabase/tests/settlement_test.sql`, `scripts/verify-rls.ts`, `.github/` 없음) — 자동 테스트는 정산 SQL 1파일과 RLS 스크립트뿐이고 모두 로컬 Docker 수동 실행이다 / MVP 범위에서 CI 구성을 보류했다 / GitHub Actions에서 supabase start → SQL 테스트 → RLS 스크립트 → typecheck/lint.
 
-완료: 함수 EXECUTE 일괄 부여(0006) — 0007에서 회수.
+완료: 함수 EXECUTE 일괄 부여(0006) — 0007에서 회수. 로컬 Supabase(Docker)에서 `db reset` 후 anon 키 `get_remind_targets` RPC 42501, `settlement_test.sql` 통과 확인(2026-10-08).
 
 ## 구조
 

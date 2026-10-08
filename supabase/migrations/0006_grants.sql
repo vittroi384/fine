@@ -2,6 +2,7 @@
 -- 0006_grants.sql : 테이블·함수 권한 부여
 -- TODO(spec): 최신 Supabase는 새 테이블에 API 롤 기본 권한을 부여하지 않으므로
 -- 명시적 GRANT가 필요하다 (§5에는 없던 운영 수정). 행 단위 접근은 계속 RLS가 통제한다.
+-- 함수 EXECUTE 는 0007 에서 회수한다.
 -- =========================================================
 grant usage on schema public to anon, authenticated, service_role;
 

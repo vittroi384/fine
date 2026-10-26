@@ -15,6 +15,10 @@
 | 로그인 | 내 그룹 | 그룹 만들기 |
 |---|---|---|
 | ![로그인](assets-readme/login.png) | ![내 그룹](assets-readme/home.png) | ![그룹 만들기](assets-readme/create-group.png) |
+## 아키텍처
+
+![FINE 아키텍처](assets-readme/architecture.png)
+
 ## 시작하기 (로컬 개발)
 
 ```bash
